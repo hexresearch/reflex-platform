@@ -5,4 +5,5 @@ let
         url = "https://github.com/${owner}/${repo}/archive/${rev}.tar.gz";
       }
     else (import <nixpkgs> {}).fetchFromGitHub;
-in import (fetchFromGitHub (builtins.fromJSON (builtins.readFile ./github.json)))
+/* in import (fetchFromGitHub (builtins.fromJSON (builtins.readFile ./github.json))) */
+in import ../../../nixpkgs

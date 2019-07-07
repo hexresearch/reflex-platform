@@ -18,14 +18,14 @@ let iosSupport = system == "x86_64-darwin";
     splicesEval = self: super: {
       haskell = super.haskell // {
         compiler = super.haskell.compiler // {
-          ghcSplices-8_4 = super.haskell.compiler.ghc843.overrideAttrs (drv: {
+          ghcSplices-8_4 = super.haskell.compiler.ghc844.overrideAttrs (drv: {
             enableParallelBuilding = false;
             patches = (drv.patches or [])
               ++ [ ./splices-load-save.patch ./haddock.patch ];
           });
         };
         packages = super.haskell.packages // {
-          ghcSplices-8_4 = super.haskell.packages.ghc843.override {
+          ghcSplices-8_4 = super.haskell.packages.ghc844.override {
             buildHaskellPackages = self.buildPackages.haskell.packages.ghcSplices-8_4;
             ghc = self.buildPackages.haskell.compiler.ghcSplices-8_4;
           };
@@ -80,7 +80,11 @@ let iosSupport = system == "x86_64-darwin";
           "webkitgtk-2.4.11"
         ];
         packageOverrides = pkgs: {
-          webkitgtk = pkgs.webkitgtk220x;
+          webkitgtk = pkgs.callPackage ./webkitgtk/2.20.nix {
+            harfbuzz = pkgs.harfbuzzFull;
+            inherit ( pkgs.gst_all_1) gst-plugins-base gst-plugins-bad;
+            stdenv =  pkgs.overrideCC  pkgs.stdenv  pkgs.gcc6;
+          };
         };
 
         # XCode needed for native macOS app
@@ -189,7 +193,7 @@ let iosSupport = system == "x86_64-darwin";
   ghcHEAD = (makeRecursivelyOverridable nixpkgs.haskell.packages.ghcHEAD).override {
     overrides = nixpkgs.haskell.overlays.combined;
   };
-  ghc8_4 = (makeRecursivelyOverridable nixpkgs.haskell.packages.ghc843).override {
+  ghc8_4 = (makeRecursivelyOverridable nixpkgs.haskell.packages.ghc844).override {
     overrides = nixpkgs.haskell.overlays.combined;
   };
 

@@ -6,7 +6,8 @@ self: super: {
   haddock-library-ghcjs = dontCheck super.haddock-library-ghcjs;
   haddock-api-ghcjs = dontCheck super.haddock-api-ghcjs;
   algebraic-graphs = doJailbreak super.algebraic-graphs;
-
+  ref-tf = haskellLib.doJailbreak super.ref-tf;
+  
   # Broken in master
   # PR is https://github.com/vincenthz/hit/pull/37
   hit = dontCheck (self.callCabal2nix "hit" (fetchFromGitHub {

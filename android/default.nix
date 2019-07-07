@@ -110,6 +110,7 @@ in rec {
       # Set this to false to build one APK per target platform.  This will
       # automatically transform the version code to 1000 * versionCode + offset
       # where "offset" is a per-platform constant.
+    , buildBundle ? false
     }:
     assert builtins.match "^([A-Za-z][A-Za-z0-9_]*\\.)*[A-Za-z][A-Za-z0-9_]*$" applicationId != null;
     nixpkgs.lib.makeOverridable impl.buildApp {
@@ -131,6 +132,7 @@ in rec {
               additionalDependencies
               nativeDependencies
               javaSources
-              universalApk;
+              universalApk
+              buildBundle;
     };
 }
