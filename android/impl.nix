@@ -94,7 +94,7 @@ in {
             nativeDepsCmd = concatStrings (mapAttrsToList (destName: destPath: ''
               local exe="${destPath}"
               if [ ! -f "$exe" ] ; then
-                >&2 echo 'Error: executable "${destName}" not found'
+                >&2 echo 'Error: executable "${destPath}" not found'
                 exit 1
               fi
               cp --no-preserve=mode "$exe" "$ARCH_LIB/${destName}"
