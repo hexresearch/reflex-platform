@@ -20,7 +20,6 @@
                   android:label="@string/app_name"
                   android:configChanges="orientation|screenSize"
                   android:windowSoftInputMode="adjustResize"
-                  android:screenOrientation="portrait"
                   ${activityAttributes}
                   >
             <intent-filter>
