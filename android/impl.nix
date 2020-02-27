@@ -81,7 +81,7 @@ in {
           paths = javaSources ++ [
             (ghcAndroidAarch64.android-activity.src + "/java") #TODO: Use output, not src
             (ghcAndroidAarch64.reflex-dom.src + "/java")
-          ] ++ javaSources ghcAndroidAarch64;
+          ];
         };
         src = ./src;
         nativeBuildInputs = [ nixpkgs.rsync ];
