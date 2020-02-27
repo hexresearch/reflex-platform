@@ -107,9 +107,6 @@ in rec {
       # You need to patch soname in make files of libraries to link against
       # unversioned libraries.
 
-    , javaSources ? []
-      # A list of additional Java source directories to include in the APK build
-
     , javaSources ? (_: [])
       # Additional java files or folders with java files that are inlcuded
       # in resulted APK.
