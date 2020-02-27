@@ -72,6 +72,8 @@ in rec {
       #   keyPassword = "password";
       # }
 
+    , isRelease ? releaseKey != null
+
     , resources ? defaultResources
 
     , assets ? defaultAssets
@@ -94,11 +96,19 @@ in rec {
 
     , additionalDependencies ? ""
 
-    , nativeDependencies ? (_: _: {})
+    , runtimeSharedLibs ? (_: [])
       # Allows to copy native .so libraries into APK. Example:
-      # nativeDependencies = nixpkgs haskellPackages: {
-      #   "libsodium.so" = "${nixpkgs.libsodium}/lib/libsodium.so";
-      # };
+      # runtimeSharedLibs = nixpkgs: [
+      #   "${nixpkgs.libsodium}/lib/libsodium.so"
+      # ];
+      #
+      # Note that android linker doesn't support versioned libraries, so
+      # for instance libz.so.1 won't be copied by gradle into resulted APK.
+      # You need to patch soname in make files of libraries to link against
+      # unversioned libraries.
+
+    , javaSources ? []
+      # A list of additional Java source directories to include in the APK build
 
     , javaSources ? (_: [])
       # Additional java files or folders with java files that are inlcuded
@@ -120,6 +130,7 @@ in rec {
               displayName
               version
               releaseKey
+              isRelease
               resources
               assets
               iconPath
@@ -129,7 +140,7 @@ in rec {
               intentFilters
               googleServicesJson
               additionalDependencies
-              nativeDependencies
+              runtimeSharedLibs
               javaSources
               universalApk;
     };

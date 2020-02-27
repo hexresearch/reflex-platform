@@ -11,10 +11,11 @@ let overrideAndroidCabal = package: overrideCabal package (drv: {
       buildCommand = ''
         mkdir -p "$out/bin"
         cp -r "$src"/* "$out"
-        cat >"$out/bin/deploy" <<EOF
-        #!/usr/bin/env bash
-        $(command -v adb) install -r "$(echo $out/*.apk)"
-        EOF
+        substitute ${./deploy.sh} $out/bin/deploy \
+          --subst-var-by coreutils ${nixpkgs.coreutils} \
+          --subst-var-by adb ${androidenv.androidPkgs_9_0.platform-tools} \
+          --subst-var-by java ${nixpkgs.openjdk12} \
+          --subst-var-by out $out
         chmod +x "$out/bin/deploy"
       '';
       buildInputs = [ androidenv.androidPkgs_9_0.androidsdk ];
@@ -25,7 +26,7 @@ let overrideAndroidCabal = package: overrideCabal package (drv: {
                      patchelf glibc;
       inherit androidenv;
     };
-    inherit (nixpkgs.lib) splitString escapeShellArg mapAttrs mapAttrsToList attrNames concatStrings optionalString;
+    inherit (nixpkgs.lib) splitString escapeShellArg mapAttrs attrNames concatStrings optionalString;
 in {
   buildApp = args: with args; addDeployScript (buildGradleApp {
     inherit acceptAndroidSdkLicenses;
@@ -46,7 +47,7 @@ in {
       let splitApplicationId = splitString "." applicationId;
           appSOs = mapAttrs (abiVersion: { myNixpkgs, myHaskellPackages }: {
             hsApp = overrideAndroidCabal (package myHaskellPackages);
-            nativeDeps = nativeDependencies myNixpkgs myHaskellPackages;
+            sharedLibs = runtimeSharedLibs myNixpkgs;
           }) {
             "arm64-v8a" = {
               myNixpkgs = nixpkgsCross.android.aarch64;
@@ -77,7 +78,7 @@ in {
         });
         javaSrc = nixpkgs.buildEnv {
           name = applicationId + "-java";
-          paths = [
+          paths = javaSources ++ [
             (ghcAndroidAarch64.android-activity.src + "/java") #TODO: Use output, not src
             (ghcAndroidAarch64.reflex-dom.src + "/java")
           ] ++ javaSources ghcAndroidAarch64;
@@ -97,15 +98,16 @@ in {
           ln -s "$applicationMk" "$out/jni/Application.mk"
 
         '' + concatStrings (builtins.map (arch:
-          let inherit (appSOs.${arch}) hsApp nativeDeps;
-            nativeDepsCmd = concatStrings (mapAttrsToList (destName: destPath: ''
-              local exe="${destPath}"
-              if [ ! -f "$exe" ] ; then
-                >&2 echo 'Error: executable "${destPath}" not found'
+          let
+            inherit (appSOs.${arch}) hsApp sharedLibs;
+            sharedLibsCmd = concatStrings (map (libPath: ''
+              local lib="${libPath}"
+              if [ ! -f "$lib" ] ; then
+                >&2 echo 'Error: library $lib not found'
                 exit 1
               fi
-              cp --no-preserve=mode "$exe" "$ARCH_LIB/${destName}"
-              '') nativeDeps);
+              cp --no-preserve=mode "$lib" "$ARCH_LIB"
+              '') sharedLibs);
           in ''
             {
               ARCH_LIB=$out/lib/${arch}
@@ -118,7 +120,7 @@ in {
               fi
               cp --no-preserve=mode "$exe" "$ARCH_LIB/libHaskellActivity.so"
 
-              '' + nativeDepsCmd + ''
+              '' + sharedLibsCmd + ''
             }
         '') abiVersions) + ''
           rsync -r --chmod=+w "${assets}"/ "$out/assets/"

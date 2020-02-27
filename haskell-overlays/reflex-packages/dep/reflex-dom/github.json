@@ -1,6 +1,7 @@
 {
-  "owner": "hexresearch",
+  "owner": "reflex-frp",
   "repo": "reflex-dom",
-  "rev": "03f0f177cc8a40bf4bc627dd2e7979c0a4689f8f",
-  "sha256": "0rr8wzf498d1bi5h989z5jx3y7dgrwhyc34khzab7cpw1q1zbnlp"
+  "branch": "master",
+  "rev": "94c26076a71f229b5bd27128cf6fc0dbcba011ac",
+  "sha256": "00sx5x51jv1j24qlhrbp5sqnqcyz1iy2sgjap0y97c4dkzxi3wd3"
 }
