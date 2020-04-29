@@ -1,5 +1,6 @@
 { stdenv, androidenv, jdk, gnumake, gawk, file
-, which, gradle, fetchurl, buildEnv, runCommand }:
+, which, gradle, fetchurl, buildEnv, runCommand
+, unzip, zip, patchelf, glibc }:
 
 args@{ name, src, platformVersions ? [ "8" ]
      , useGoogleAPIs ? false, useGooglePlayServices ? false
@@ -18,16 +19,17 @@ let
   inherit (stdenv.lib) optionalString optional;
 
   m2install = { repo, version, artifactId, groupId
-              , jarSha256, pomSha256, aarSha256, suffix ? "" }:
+              , jarSha256, pomSha256, aarSha256, suffix ? "", classifier ? null }:
     let m2Name = "${artifactId}-${version}";
         m2Path = "${builtins.replaceStrings ["."] ["/"] groupId}/${artifactId}/${version}";
+        clspaced = if classifier == null then "" else "-${classifier}";
     in runCommand m2Name {} (''
          mkdir -p $out/m2/${m2Path}
        '' + optionalString (jarSha256 != null) ''
          install -D ${fetchurl {
-                        url = "${repo}${m2Path}/${m2Name}${suffix}.jar";
+                        url = "${repo}${m2Path}/${m2Name}${suffix}${clspaced}.jar";
                         sha256 = jarSha256;
-                      }} $out/m2/${m2Path}/${m2Name}${suffix}.jar
+                      }} $out/m2/${m2Path}/${m2Name}${suffix}${clspaced}.jar
        '' + optionalString (pomSha256 != null) ''
          install -D ${fetchurl {
                         url = "${repo}${m2Path}/${m2Name}${suffix}.pom";
@@ -35,9 +37,9 @@ let
                       }} $out/m2/${m2Path}/${m2Name}${suffix}.pom
        '' + optionalString (aarSha256 != null) ''
          install -D ${fetchurl {
-                        url = "${repo}${m2Path}/${m2Name}${suffix}.aar";
+                        url = "${repo}${m2Path}/${m2Name}${suffix}${clspaced}.aar";
                         sha256 = aarSha256;
-                      }} $out/m2/${m2Path}/${m2Name}${suffix}.aar
+                      }} $out/m2/${m2Path}/${m2Name}${suffix}${clspaced}.aar
        '');
   androidsdkComposition = androidenv.composeAndroidPackages {
     inherit platformVersions useGoogleAPIs;
@@ -68,7 +70,7 @@ stdenv.mkDerivation ({
       ) >> gradle.properties
     ''}
     buildDir=`pwd`
-    cp -r $ANDROID_HOME $buildDir/local_sdk
+    cp -RL $ANDROID_HOME $buildDir/local_sdk
     chmod -R 755 local_sdk
     export ANDROID_HOME=$buildDir/local_sdk/android-sdk
     # Key files cannot be stored in the user's home directory. This
@@ -88,12 +90,39 @@ stdenv.mkDerivation ({
     chmod -R 755 .m2
     mkdir -p .m2/repository/com/android/support
     cp -RL local_sdk/android-sdk/extras/android/m2repository/com/android/support/* .m2/repository/com/android/support/
+
+    echo "Patching AAPT2 with patchelf"
+    aapt_jar=.m2/repository/com/android/tools/build/aapt2/*/aapt2-*-linux.jar
+    mkdir aapt_tmp
+    cd aapt_tmp
+    ${unzip}/bin/unzip ../$aapt_jar
+    linker=${glibc}/lib64/ld-linux-x86-64.so.2
+    ${patchelf}/bin/patchelf --set-interpreter $linker aapt2
+    ${zip}/bin/zip -r aapt *
+    mv aapt.zip ../$aapt_jar
+    cd ..
+
     gradle ${gradleTask} --offline --no-daemon -g ./tmp -Dmaven.repo.local=`pwd`/.m2/repository
   '';
 
   installPhase = ''
     mkdir -p $out
-    cp -RL build/outputs/apk/*/*.apk $out
+    if [ -d "${buildDirectory}/build/outputs/apk/debug" ]; then
+      mkdir -p $out/debug
+      cp -RL ${buildDirectory}/build/outputs/apk/debug/*.apk $out/debug
+    fi
+    if [ -d "${buildDirectory}/build/outputs/apk/release" ]; then
+      mkdir -p $out/release
+      cp -RL ${buildDirectory}/build/outputs/apk/release/*.apk $out/release
+    fi
+    if [ -d "${buildDirectory}/build/outputs/bundle/release" ]; then
+      mkdir -p $out/release
+      cp -RL ${buildDirectory}/build/outputs/bundle/release/android-app.aab $out/release
+    fi
+    if [ -d "${buildDirectory}/build/outputs/bundle/debug" ]; then
+      mkdir -p $out/debug
+      cp -RL ${buildDirectory}/build/outputs/bundle/debug/android-app.aab $out/debug
+    fi
   '';
 
   meta = {

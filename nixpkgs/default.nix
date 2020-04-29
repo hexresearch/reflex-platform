@@ -7,3 +7,4 @@ let
       }
     else (import <nixpkgs> {}).fetchFromGitHub { inherit owner repo rev; };
 in import (fetchFromGitHub (builtins.fromJSON (builtins.readFile ./github.json)))
+/* in import ../../../nixpkgs */

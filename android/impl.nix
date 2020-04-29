@@ -22,7 +22,8 @@ let overrideAndroidCabal = package: overrideCabal package (drv: {
     } "";
     buildGradleApp = import ./build-gradle-app.nix {
       inherit (nixpkgs) stdenv jdk gnumake gawk file runCommand
-                     which gradle fetchurl buildEnv;
+                     which gradle fetchurl buildEnv unzip zip
+                     patchelf glibc;
       inherit androidenv;
     };
     inherit (nixpkgs.lib) splitString escapeShellArg mapAttrs attrNames concatStrings optionalString;
@@ -31,9 +32,9 @@ in {
     inherit acceptAndroidSdkLicenses;
     buildDirectory = "./.";
     # Can be "assembleRelease" or "assembleDebug" (to build release or debug) or "assemble" (to build both)
-    gradleTask = if isRelease
-      then "assembleRelease"
-      else "assembleDebug";
+    gradleTask = if releaseKey == null
+      then "assembleDebug"
+      else "bundleRelease";
     keyAlias = releaseKey.keyAlias or null;
     keyAliasPassword = releaseKey.keyPassword or null;
     keyStore = releaseKey.storeFile or null;
@@ -102,7 +103,7 @@ in {
             sharedLibsCmd = concatStrings (map (libPath: ''
               local lib="${libPath}"
               if [ ! -f "$lib" ] ; then
-                >&2 echo 'Error: library $lib not found'
+                >&2 echo "Error: library $lib not found"
                 exit 1
               fi
               cp --no-preserve=mode "$lib" "$ARCH_LIB"

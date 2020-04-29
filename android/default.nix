@@ -107,9 +107,12 @@ in rec {
       # You need to patch soname in make files of libraries to link against
       # unversioned libraries.
 
-    , javaSources ? []
-      # A list of additional Java source directories to include in the APK build
-
+    , javaSources ? (_: [])
+      # Additional java files or folders with java files that are inlcuded
+      # in resulted APK.
+      # javaSources = pkgs: [
+      #   ./java
+      # ];
     , universalApk ? true
       # Set this to false to build one APK per target platform.  This will
       # automatically transform the version code to 1000 * versionCode + offset
