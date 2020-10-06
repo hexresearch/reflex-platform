@@ -34,7 +34,7 @@ in {
     # Can be "assembleRelease" or "assembleDebug" (to build release or debug) or "assemble" (to build both)
     gradleTask = if releaseKey == null
       then "assembleDebug"
-      else "bundleRelease";
+      else if releaseBundle then "bundleRelease" else "assembleRelease";
     keyAlias = releaseKey.keyAlias or null;
     keyAliasPassword = releaseKey.keyPassword or null;
     keyStore = releaseKey.storeFile or null;

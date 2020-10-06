@@ -72,6 +72,9 @@ in rec {
       #   keyPassword = "password";
       # }
 
+    # If true release will produce bundle either apk
+    , releaseBundle ? true
+
     , isRelease ? releaseKey != null
 
     , resources ? defaultResources
@@ -127,6 +130,7 @@ in rec {
               displayName
               version
               releaseKey
+              releaseBundle
               isRelease
               resources
               assets
