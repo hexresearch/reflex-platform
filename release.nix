@@ -3,6 +3,11 @@
 
 { self-args ? { config.android_sdk.accept_license = true; }
 , local-self ? import ./. self-args
+, cacheBuildSystems ? [
+    "x86_64-linux"
+    # "i686-linux"
+    "x86_64-darwin"
+  ]
 }:
 
 let
@@ -22,12 +27,6 @@ let
 
   drvListToAttrs = drvs:
     lib.listToAttrs (map (drv: { inherit (drv) name; value = drv; }) drvs);
-
-  cacheBuildSystems = [
-    "x86_64-linux"
-    # "i686-linux"
-    "x86_64-darwin"
-  ];
 
   perPlatform = lib.genAttrs cacheBuildSystems (system: let
     getRP = args: import ./. ((self-args // { inherit system; }) // args);
@@ -55,7 +54,7 @@ let
       // benchmark.dep
       ;
 
-    skeleton-test = import ./skeleton-test.nix { inherit reflex-platform; };
+    skeleton-test = import ./tests/skeleton.nix { inherit reflex-platform; };
 
     collect = v:
       if lib.isDerivation v then [v]
@@ -69,7 +68,7 @@ let
     ];
     perOptDebugVariant = lib.genAttrs optDebugVariants (variant: let
       reflex-platform = getRP { enableLibraryProfiling = variant == "profiled"; };
-      skeleton-test = import ./skeleton-test.nix { inherit reflex-platform; };
+      skeleton-test = import ./tests/skeleton.nix { inherit reflex-platform; };
       otherDeps = getOtherDeps reflex-platform;
       packages = {
         # TODO fix GHCJS profiling builds
@@ -92,8 +91,7 @@ let
         };
         skeleton-test-project-android = skeleton-test.project.android;
       } // lib.optionalAttrs (reflex-platform.iosSupport) {
-        inherit (reflex-platform) iosReflexTodomvc;
-        inherit (reflex-platform) iosReflexTodomvc-8_6;
+        inherit (reflex-platform) iosReflexTodomvc iosReflexTodomvc-8_6 iosSimulatorReflexTodomvc;
         skeleton-test-project-ios = skeleton-test.project.ios;
       } // drvListToAttrs otherDeps
         # TODO fix GHCJS profiling builds
