@@ -1273,7 +1273,7 @@
     version = "6.0.3";
     repo = "https://jcenter.bintray.com/";
     jarSha256 = "cc12b1168e521491dd0e687cfebec11a4af874b22af70e10cf2a05b47ca00c8f";
-    pomSha256 = "5a5c7317d68ce80d1d40c9d8bd4e38814d42d1b16c265146e333634833a35a57";
+    pomSha256 = "0gxvkn9aksb33ic0k3miffkpajbld7czvz32rjsfvdpc3zbx7f6s";
     aarSha256 = null; }
 
   { artifactId = "proguard-parent";
