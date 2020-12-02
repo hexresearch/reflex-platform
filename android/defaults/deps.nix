@@ -1414,7 +1414,7 @@
     version = "10";
     repo = "https://jcenter.bintray.com/";
     jarSha256 = null;
-    pomSha256 = "caaf967d94afb21753f36082c6086206bd1f48825ff596932cceba72b65d39fa";
+    pomSha256 = "0gwvg4xglz827nm17j89ay0zdb78k288l6q1w2rvp3vqyzlg97rv";
     aarSha256 = null; }
 
   { artifactId = "httpcore";
