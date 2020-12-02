@@ -1273,7 +1273,7 @@
     version = "6.0.3";
     repo = "https://jcenter.bintray.com/";
     jarSha256 = "cc12b1168e521491dd0e687cfebec11a4af874b22af70e10cf2a05b47ca00c8f";
-    pomSha256 = "0gxvkn9aksb33ic0k3miffkpajbld7czvz32rjsfvdpc3zbx7f6s";
+    pomSha256 = "0msslcrlhqrkwd3529kcn78l4kc1717bvn6980fhvs4csqbp6p2s";
     aarSha256 = null; }
 
   { artifactId = "proguard-parent";
@@ -1414,7 +1414,7 @@
     version = "10";
     repo = "https://jcenter.bintray.com/";
     jarSha256 = null;
-    pomSha256 = "0gwvg4xglz827nm17j89ay0zdb78k288l6q1w2rvp3vqyzlg97rv";
+    pomSha256 = "1yirbnv75fnf5j9rdxazh941zg86c84cd0k0yd9igcmgjiyrdbya";
     aarSha256 = null; }
 
   { artifactId = "httpcore";
